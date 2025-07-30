@@ -1,6 +1,8 @@
 import React, {useState} from "react";
+import { useNavigate } from 'react-router-dom';
 
 function UserForm(props) {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     Name: '',
     userID: '',
@@ -19,6 +21,10 @@ function UserForm(props) {
   function handleSubmit(event) {
     event.preventDefault();
     console.log("Form Submitted", formData);
+
+    navigate('/projects');
+
+
   }
 return (
 
