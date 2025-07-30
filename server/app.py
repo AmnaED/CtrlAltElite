@@ -14,11 +14,11 @@ def encrypt_route():
     data = request.get_json()
     text = data.get("text")
 
-    if not text or N is None or D is None:
+    if not text:
         return jsonify({"error": "Missing required fields"}), 400
 
     N = 3 # fixed key for encryption
-    N = 1 # fixed direction for encryption
+    D = 1 # fixed direction for encryption
     
     encrypted_text = encrypt(text, N, D)
     return jsonify({"encrypted": encrypted_text})
@@ -27,11 +27,12 @@ def encrypt_route():
 def decrypt_route():
     data = request.get_json()
     encrypted_text = data.get("text")
+
+    if not encrypted_text:
+        return jsonify({"error": "Missing required fields"}), 400
+
     N = 3
     D = 1
-
-    if not encrypted_text or N is None or D is None:
-        return jsonify({"error": "Missing required fields"}), 400
     
     decrypted_text = decrypt(encrypted_text, N, D)
     return jsonify({"decrypted": decrypted_text})
