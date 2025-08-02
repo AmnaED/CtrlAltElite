@@ -40,7 +40,7 @@ return(
         )}
         <label>
             Project ID:
-            <input name = "projectID" type = "text" value = {formData.projectID} onChange = {handleInputChange}/>
+            <input name = "projectID" type = "number" value = {formData.projectID} onChange = {handleInputChange}/>
         </label>
             <br />
         <button type="submit">{props.buttonMessage}</button>
