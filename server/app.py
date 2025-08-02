@@ -18,34 +18,6 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
-# Get MongoDB password and connect to database
-mongo_pass = os.getenv("MONGO_PASSWORD")
-link = f"mongodb+srv://ranyae:{mongo_pass}@apad-project.qvgsgr3.mongodb.net/?retryWrites=true&w=majority"
-client = MongoClient(link)
-
-print(mongo_pass)
-# Accessing tables
-resource_db = client["resource-management-db"]
-resources_collection = resource_db["resources"]
-project_db = client["project-table-db"]
-project_collection = project_db["project-table"]
-user_db = client["user-management-db"]
-user_collection = project_db["user-management"]
-
-# Get MongoDB password and connect to database
-mongo_pass = os.getenv("MONGO_PASSWORD")
-link = f"mongodb+srv://ranyae:{mongo_pass}@apad-project.qvgsgr3.mongodb.net/?retryWrites=true&w=majority"
-client = MongoClient(link)
-
-# Accessing tables
-resource_db = client["resource-management-db"]
-resources_collection = resource_db["resources"]
-project_db = client["project-table-db"]
-project_collection = project_db["project-table"]
-user_db = client["user-management-db"]
-user_collection = user_db["user-management"]
-
-
 @app.route("/")
 def home():
     return jsonify({"message": "Hello from Flask!"})
