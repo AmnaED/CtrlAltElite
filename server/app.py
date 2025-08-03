@@ -1,9 +1,9 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-from encryption import encrypt, decrypt
 from dotenv import load_dotenv
 from pymongo import MongoClient
 from hardware import hardwareSet
+from project import Project
 import os
 
 # Load environment variables from .env
@@ -32,33 +32,6 @@ user_collection = user_db["user-management"]
 @app.route("/")
 def home():
     return jsonify({"message": "Hello from Flask!"})
-
-@app.route("/encrypt", methods=["POST"])
-def encrypt_route():
-    data = request.get_json()
-    text = data.get("text")
-
-    if not text or N is None or D is None:
-        return jsonify({"error": "Missing required fields"}), 400
-
-    N = 3 # fixed key for encryption
-    N = 1 # fixed direction for encryption
-    
-    encrypted_text = encrypt(text, N, D)
-    return jsonify({"encrypted": encrypted_text})
-
-@app.route("/decrypt", methods=["POST"])
-def decrypt_route():
-    data = request.get_json()
-    encrypted_text = data.get("text")
-    N = 3
-    D = 1
-
-    if not encrypted_text or N is None or D is None:
-        return jsonify({"error": "Missing required fields"}), 400
-    
-    decrypted_text = decrypt(encrypted_text, N, D)
-    return jsonify({"decrypted": decrypted_text})
 
 @app.route("/hardware/<int:hardware_id>/capacity", methods=["GET"])
 def get_hardware_capacity(hardware_id):
@@ -107,6 +80,76 @@ def checkin_hardware():
 
     result = hardware_set.check_in(qty, project_id, hardware_id)
     return jsonify({"result": result})
+
+@app.route("/projects", methods=["POST"])
+def create_project():
+    data = request.get_json()
+    project_id = data.get("project_id")
+    project_name = data.get("project_name")
+    project_description = data.get("project_description")
+
+    if not project_id or not project_name:
+        return jsonify({"error": "Missing required fields"}), 400
+
+    if project_collection.find_one({"project_id": project_id}):
+        return jsonify({"error": "Project ID already exists"}), 400
+
+    new_project = Project(project_id=project_id, project_name=project_name, project_description=project_description)
+    project_collection.insert_one(new_project.to_dict())
+    
+    return jsonify({"message": "Project created successfully", "project_id": project_id}), 201
+
+@app.route("/projects/<int:project_id>", methods=["GET"])
+def get_project(project_id):
+    project_data = project_collection.find_one({"project_id": project_id}, {"_id": 0})
+    if project_data:
+        project = Project(project_data=project_data)
+        return jsonify(project.to_dict())
+    else:
+        return jsonify({"error": "Project not found"}), 404
+
+@app.route("/projects/<int:project_id>/users", methods=["POST"])
+def add_user_to_project(project_id):
+    data = request.get_json()
+    user_id = data.get("user_id")
+
+    if not user_id:
+        return jsonify({"error": "Missing user ID"}), 400
+
+    project_data = project_collection.find_one({"project_id": project_id})
+    if not project_data:
+        return jsonify({"error": "Project not found"}), 404
+
+    project = Project(project_data=project_data)
+    if user_id in project.get_members():
+        return jsonify({"error": "User already in project"}), 400
+
+    project.add_user(user_id)
+    project_collection.update_one({"project_id": project_id}, {"$set": {"user_ids": project.get_members()}})
+    return jsonify({"message": "User added to project successfully"}), 200
+
+@app.route("/projects/<int:project_id>/users/<string:user_id>", methods=["DELETE"])
+def remove_user_from_project(project_id, user_id):
+    project_data = project_collection.find_one({"project_id": project_id})
+    if not project_data:
+        return jsonify({"error": "Project not found"}), 404
+
+    project = Project(project_data=project_data)
+    if user_id not in project.get_members():
+        return jsonify({"error": "User not in project"}), 404
+    
+    project.remove_user(user_id)
+    project_collection.update_one({"project_id": project_id}, {"$set": {"user_ids": project.get_members()}})
+    return jsonify({"message": "User removed from project successfully"}), 200
+
+@app.route("/projects/<int:project_id>/members", methods=["GET"])
+def get_project_members(project_id):
+    project_data = project_collection.find_one({"project_id": project_id}, {"_id": 0})
+    if not project_data:
+        return jsonify({"error": "Project not found"}), 404
+
+    members = project_data.get("user_ids", [])
+    return jsonify({"members": members})
 
 
 if __name__ == "__main__":
