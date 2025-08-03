@@ -33,33 +33,6 @@ user_collection = user_db["user-management"]
 def home():
     return jsonify({"message": "Hello from Flask!"})
 
-@app.route("/encrypt", methods=["POST"])
-def encrypt_route():
-    data = request.get_json()
-    text = data.get("text")
-
-    if not text or N is None or D is None:
-        return jsonify({"error": "Missing required fields"}), 400
-
-    N = 3 # fixed key for encryption
-    N = 1 # fixed direction for encryption
-    
-    encrypted_text = encrypt(text, N, D)
-    return jsonify({"encrypted": encrypted_text})
-
-@app.route("/decrypt", methods=["POST"])
-def decrypt_route():
-    data = request.get_json()
-    encrypted_text = data.get("text")
-    N = 3
-    D = 1
-
-    if not encrypted_text or N is None or D is None:
-        return jsonify({"error": "Missing required fields"}), 400
-    
-    decrypted_text = decrypt(encrypted_text, N, D)
-    return jsonify({"decrypted": decrypted_text})
-
 @app.route("/hardware/<int:hardware_id>/capacity", methods=["GET"])
 def get_hardware_capacity(hardware_id):
     hardware = resources_collection.find_one(
