@@ -1,9 +1,9 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-from encryption import encrypt, decrypt
 from dotenv import load_dotenv
 from pymongo import MongoClient
 from hardware import hardwareSet
+from user import User
 import os
 
 # Load environment variables from .env
@@ -32,33 +32,6 @@ user_collection = user_db["user-management"]
 @app.route("/")
 def home():
     return jsonify({"message": "Hello from Flask!"})
-
-@app.route("/encrypt", methods=["POST"])
-def encrypt_route():
-    data = request.get_json()
-    text = data.get("text")
-
-    if not text or N is None or D is None:
-        return jsonify({"error": "Missing required fields"}), 400
-
-    N = 3 # fixed key for encryption
-    N = 1 # fixed direction for encryption
-    
-    encrypted_text = encrypt(text, N, D)
-    return jsonify({"encrypted": encrypted_text})
-
-@app.route("/decrypt", methods=["POST"])
-def decrypt_route():
-    data = request.get_json()
-    encrypted_text = data.get("text")
-    N = 3
-    D = 1
-
-    if not encrypted_text or N is None or D is None:
-        return jsonify({"error": "Missing required fields"}), 400
-    
-    decrypted_text = decrypt(encrypted_text, N, D)
-    return jsonify({"decrypted": decrypted_text})
 
 @app.route("/hardware/<int:hardware_id>/capacity", methods=["GET"])
 def get_hardware_capacity(hardware_id):
@@ -107,6 +80,69 @@ def checkin_hardware():
 
     result = hardware_set.check_in(qty, project_id, hardware_id)
     return jsonify({"result": result})
+
+@app.route("/users", methods=["POST"])
+def create_user():
+    data = request.get_json()
+    user_id = data.get("user_id")
+    name = data.get("name")
+    password = data.get("password")
+
+    if not user_id or not name or not password:
+        return jsonify({"error: Missing required fields"}), 400
+
+    if user_collection.find_one({"user_id": user_id}):
+        return jsonify({"error": "User already exists"}), 400
+    
+    new_user = User(user_id=user_id, name=name, password=password)
+    user_collection.insert_one(new_user.to_dict())
+    return jsonify({"message": "User created successfully"}), 201
+
+@app.route("/users/<user_id>", methods=["GET"])
+def get_user(user_id):
+    user_data = user_collection.find_one({"user_id": user_id}, {"_id": 0})
+    if user_data:
+        user = User(user_data=user_data, encrypted=True)
+        return jsonify(user.to_dict())
+    else:
+        return jsonify({"error": "User not found"}), 404
+
+@app.route("/users/<user_id>/projects", methods=["POST"])
+def add_user_to_project(user_id):
+    data = request.get_json()
+    project_id = data.get("project_id")
+
+    if not project_id:
+        return jsonify({"error": "Project ID is required"}), 400
+
+    user_data = user_collection.find_one({"user_id": user_id})
+    if not user_data:
+        return jsonify({"error": "User not found"}), 404
+
+    user = User(user_data=user_data, encrypted=True)
+    user.add_to_project(project_id)
+    user_collection.update_one({"user_id": user_id}, {"$set": user.to_dict()})
+    
+    return jsonify({"message": "User added to project successfully"}), 200
+
+@app.route("/users/<user_id>/projects", methods=["DELETE"])
+def remove_user_from_project(user_id):
+    data = request.get_json()
+    project_id = data.get("project_id")
+
+    if not project_id:
+        return jsonify({"error": "Project ID is required"}), 400
+        
+    user_data = user_collection.find_one({"user_id": user_id})
+    if not user_data:
+        return jsonify({"error": "User not found"}), 404
+
+    user = User(user_data=user_data, encrypted=True)
+    user.remove_from_project(project_id)
+    user_collection.update_one({"user_id": user_id}, {"$set": user.to_dict()})
+    
+    return jsonify({"message": "User removed from project successfully"}), 200
+
 
 
 if __name__ == "__main__":
