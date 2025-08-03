@@ -72,9 +72,9 @@ def get_hardware_capacity(hardware_id):
         return jsonify({"capacity": capacity})
 
     else:
-        return jsonify("Hardware not found")
+        return jsonify({"error": "Hardware not found"})
 
-@app.route("/hardware/<int:hardware_id>/", methods=["GET"])
+@app.route("/hardware/<int:hardware_id>/availability", methods=["GET"])
 def get_hardware_availability(hardware_id):
     hardware = resources_collection.find_one(
         {"hardware_id": hardware_id},
@@ -86,7 +86,7 @@ def get_hardware_availability(hardware_id):
         return jsonify({"availability": availability})
 
     else:
-        return jsonify("Hardware not found")
+        return jsonify({"error": "Hardware not found"})
     
 @app.route("/hardware/checkout", methods=["POST"])
 def checkout_hardware():
