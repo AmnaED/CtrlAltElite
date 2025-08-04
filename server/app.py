@@ -10,6 +10,10 @@ import os
 # Load environment variables from .env
 load_dotenv()
 
+## needed N and D values
+N = int(os.getenv("N"))
+D = int(os.getenv("D"))
+
 # Initialize hardware set
 hardware_set = hardwareSet()
 
@@ -90,12 +94,12 @@ def create_user():
     password = data.get("password")
 
     if not user_id or not name or not password:
-        return jsonify({"error: Missing required fields"}), 400
+        return jsonify({"error": "Missing required fields"}), 400
 
     if user_collection.find_one({"user_id": user_id}):
         return jsonify({"error": "User already exists"}), 400
     
-    new_user = User(user_id=user_id, name=name, password=password)
+    new_user = User(user_id=user_id, name=name, password=password, N=N, D=D)
     user_collection.insert_one(new_user.to_dict())
     return jsonify({"message": "User created successfully"}), 201
 
@@ -172,7 +176,7 @@ def get_project(project_id):
         return jsonify({"error": "Project not found"}), 404
 
 @app.route("/projects/<int:project_id>/users", methods=["POST"])
-def add_user_to_project(project_id):
+def add_user_to_project_2(project_id):
     data = request.get_json()
     user_id = data.get("user_id")
 
@@ -192,7 +196,7 @@ def add_user_to_project(project_id):
     return jsonify({"message": "User added to project successfully"}), 200
 
 @app.route("/projects/<int:project_id>/users/<string:user_id>", methods=["DELETE"])
-def remove_user_from_project(project_id, user_id):
+def remove_user_from_project_2(project_id, user_id):
     project_data = project_collection.find_one({"project_id": project_id})
     if not project_data:
         return jsonify({"error": "Project not found"}), 404

@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router-dom';
 function UserForm(props) {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    Name: '',
-    userID: '',
+    user_id: '',
+    name: '',
     password: '',
   });
 
@@ -16,16 +16,46 @@ function UserForm(props) {
       ...prevData,
       [name]: value,
     }));
-  }
+ }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
     console.log("Form Submitted", formData);
+    if (props.isNewUser) {
 
-    navigate('/projects');
+      try {
+        const response = await fetch("http://localhost:5000/users",{
+        method: "POST",
+        headers: {"Content-Type" : "application/json"},
+        body: JSON.stringify(formData)
+        
+        });
+        const data = await response.json();
+        console.log("Data recieved from Flask", data)
 
-
+        if (response.ok) {
+          navigate('/projects');
+        } else {
+          alert(data.message || data.error || "Login Failed")
+        }
+      } catch (error) {
+        console.error("Error submitting form:", error);
+        alert("An error occurred. Please try again.");
+      }
+    } else {
+      try {
+      const response = await fetch(`http://localhost:5000/users/${formData.user_id}`);
+      if (response.ok) {
+        alert("Login Success");
+        navigate('/projects')
+      } else {
+        alert("Login Failed")
+      }
+    } catch (error) {
+      alert("Login Error")
+    }
   }
+}
 return (
 
     <form onSubmit={handleSubmit}>
@@ -34,14 +64,14 @@ return (
             <>
             <label>
                 Name: 
-                <input name = "Name" value = {formData.Name} onChange =  {handleInputChange}/>
+                <input name = "name" value = {formData.name} onChange =  {handleInputChange}/>
             </label>
             <br />
             </>
         )}
         <label>
             Username:
-            <input name = "userID" value = {formData.userID} onChange = {handleInputChange}/>
+            <input name = "user_id" value = {formData.user_id} onChange = {handleInputChange}/>
         </label>
         <br />
         <label>

@@ -2,8 +2,8 @@
 #class definition for users
 from encryption import encrypt, decrypt
 
-class User:
-    def __init__(self, user_data = None, user_id = None, name = None, password = None, project_id = None, encrypted = False):
+class User:   ### Set N and D to None to get it running
+    def __init__(self, user_data = None, user_id = None, name = None, password = None, project_id = None, encrypted = False, N=None, D=None):
         if user_data:  # to read in user document from database
             self.__user_id = user_data.get("user_id", "")
             self.__name = user_data.get("name", "")
@@ -12,7 +12,7 @@ class User:
         else:  # to initialize new user with input from frontend
             self.__user_id = user_id   # username input on the frontend
             self.__name = name      # name input on the frontend
-            self.__password = password if encrypted else encrypt(password) # password input on the frontend
+            self.__password = password if encrypted else encrypt(password, N, D) # password input on the frontend
             self.__project_id = project_id if project_id is not None else []
 
     def check_password(self, user_input):
