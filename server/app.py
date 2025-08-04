@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from pymongo import MongoClient
 from hardware import hardwareSet
 from user import User
+from project import Project
 import os
 
 # Load environment variables from .env
@@ -143,6 +144,75 @@ def remove_user_from_project(user_id):
     
     return jsonify({"message": "User removed from project successfully"}), 200
 
+@app.route("/projects", methods=["POST"])
+def create_project():
+    data = request.get_json()
+    project_id = data.get("project_id")
+    project_name = data.get("project_name")
+    project_description = data.get("project_description")
+
+    if not project_id or not project_name:
+        return jsonify({"error": "Missing required fields"}), 400
+
+    if project_collection.find_one({"project_id": project_id}):
+        return jsonify({"error": "Project ID already exists"}), 400
+
+    new_project = Project(project_id=project_id, project_name=project_name, project_description=project_description)
+    project_collection.insert_one(new_project.to_dict())
+    
+    return jsonify({"message": "Project created successfully", "project_id": project_id}), 201
+
+@app.route("/projects/<int:project_id>", methods=["GET"])
+def get_project(project_id):
+    project_data = project_collection.find_one({"project_id": project_id}, {"_id": 0})
+    if project_data:
+        project = Project(project_data=project_data)
+        return jsonify(project.to_dict())
+    else:
+        return jsonify({"error": "Project not found"}), 404
+
+@app.route("/projects/<int:project_id>/users", methods=["POST"])
+def add_user_to_project(project_id):
+    data = request.get_json()
+    user_id = data.get("user_id")
+
+    if not user_id:
+        return jsonify({"error": "Missing user ID"}), 400
+
+    project_data = project_collection.find_one({"project_id": project_id})
+    if not project_data:
+        return jsonify({"error": "Project not found"}), 404
+
+    project = Project(project_data=project_data)
+    if user_id in project.get_members():
+        return jsonify({"error": "User already in project"}), 400
+
+    project.add_user(user_id)
+    project_collection.update_one({"project_id": project_id}, {"$set": {"user_ids": project.get_members()}})
+    return jsonify({"message": "User added to project successfully"}), 200
+
+@app.route("/projects/<int:project_id>/users/<string:user_id>", methods=["DELETE"])
+def remove_user_from_project(project_id, user_id):
+    project_data = project_collection.find_one({"project_id": project_id})
+    if not project_data:
+        return jsonify({"error": "Project not found"}), 404
+
+    project = Project(project_data=project_data)
+    if user_id not in project.get_members():
+        return jsonify({"error": "User not in project"}), 404
+    
+    project.remove_user(user_id)
+    project_collection.update_one({"project_id": project_id}, {"$set": {"user_ids": project.get_members()}})
+    return jsonify({"message": "User removed from project successfully"}), 200
+
+@app.route("/projects/<int:project_id>/members", methods=["GET"])
+def get_project_members(project_id):
+    project_data = project_collection.find_one({"project_id": project_id}, {"_id": 0})
+    if not project_data:
+        return jsonify({"error": "Project not found"}), 404
+
+    members = project_data.get("user_ids", [])
+    return jsonify({"members": members})
 
 
 if __name__ == "__main__":
