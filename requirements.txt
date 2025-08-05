@@ -1,0 +1,17 @@
+aes-encryption==0.2.0
+certifi==2025.7.14
+cffi==1.17.1
+charset-normalizer==3.4.2
+crypto==1.4.1
+cryptography==45.0.5
+dnspython==2.7.0
+idna==3.10
+Naked==0.1.32
+pycparser==2.22
+pycrypto==2.6.1
+pycryptodome==3.23.0
+pymongo==4.13.2
+PyYAML==6.0.2
+requests==2.32.4
+shellescape==3.8.1
+urllib3==2.5.0
