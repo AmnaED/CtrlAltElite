@@ -8,7 +8,6 @@ dnspython==2.7.0
 idna==3.10
 Naked==0.1.32
 pycparser==2.22
-pycrypto==2.6.1
 pycryptodome==3.23.0
 pymongo==4.13.2
 PyYAML==6.0.2
