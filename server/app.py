@@ -66,7 +66,7 @@ def get_hardware_availability(hardware_id):
         return jsonify({"availability": availability})
 
     else:
-        return jsonify({"error": "Hardware not found"})
+        return jsonify({"error": "Hardware not found"}), 400
     
 @app.route("/hardware/checkout", methods=["POST"])
 def checkout_hardware():
@@ -75,8 +75,21 @@ def checkout_hardware():
     project_id = data.get("project_id")
     hardware_id = data.get("hardware_id")
 
-    result = hardware_set.check_out(qty, project_id, hardware_id)
-    return jsonify({"result": result})
+    result, updated_availability = hardware_set.check_out(qty, project_id, hardware_id)
+
+    hardware = resources_collection.find_one({"hardware_id": hardware_id})
+    if not hardware:
+        return jsonify({"error": "Hardware not found"}), 400
+
+    resources_collection.update_one(
+        {"hardware_id": hardware_id},
+        {"$set": {"available": updated_availability}}
+    )
+
+    return jsonify({
+        "result": result,
+        "available": updated_availability
+    })
 
 @app.route("/hardware/checkin", methods=["POST"])
 def checkin_hardware():
@@ -85,8 +98,19 @@ def checkin_hardware():
     project_id = data.get("project_id")
     hardware_id = data.get("hardware_id")
 
-    result = hardware_set.check_in(qty, project_id, hardware_id)
-    return jsonify({"result": result})
+    result, updated_availability = hardware_set.check_in(qty, project_id, hardware_id)
+
+    if result == 0:
+        resources_collection.update_one(
+            {"hardware_id": hardware_id},
+            {"$set": {"available": updated_availability}}
+        )
+        return jsonify({
+            "result": result,
+            "available": updated_availability
+        })
+    else:
+        return jsonify({"error": "Invalid check-in request"}), 400
 
 @app.route("/users", methods=["POST"])
 def create_user():

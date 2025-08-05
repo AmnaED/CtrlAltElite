@@ -23,20 +23,21 @@ class hardwareSet:
         if qty <= self.__availability:
             self.__availability -= qty
             self.__checkedOut[project_ID][hardware_id] += qty
-            return 0
+            return 0, self.__availability
         else:
             self.__checkedOut[project_ID][hardware_id] += self.__availability
             self.__availability = 0
-            return -1
+            return -1, self.__availability
         
     def check_in(self, qty, project_ID, hardware_id):
         # Ensure project and hardware exist
         if project_ID not in self.__checkedOut or hardware_id not in self.__checkedOut[project_ID]:
-            return -1
+            return -1, None
         if qty <= self.__checkedOut[project_ID][hardware_id]:
             self.__checkedOut[project_ID][hardware_id] -= qty
             self.__availability += qty
-            return 0
+            return 0, self.__availability
         else:
-            return -1
+            # amount to check in exceeds checked out amount
+            return -1, None
         
