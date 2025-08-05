@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, session
 from flask_cors import CORS
 from dotenv import load_dotenv
 from pymongo import MongoClient
@@ -10,11 +10,17 @@ import os
 # Load environment variables from .env
 load_dotenv()
 
+## needed N and D values
+N = int(os.getenv("N"))
+D = int(os.getenv("D"))
+
 # Initialize hardware set
 hardware_set = hardwareSet()
 
 app = Flask(__name__)
-CORS(app)
+app.secret_key = os.getenv("SECRET_KEY")
+CORS(app, supports_credentials=True)
+
 
 # Get MongoDB password and connect to database
 mongo_pass = os.getenv("MONGO_PASSWORD")
@@ -90,17 +96,21 @@ def create_user():
     password = data.get("password")
 
     if not user_id or not name or not password:
-        return jsonify({"error: Missing required fields"}), 400
+        return jsonify({"error": "Missing required fields"}), 400
 
     if user_collection.find_one({"user_id": user_id}):
         return jsonify({"error": "User already exists"}), 400
     
-    new_user = User(user_id=user_id, name=name, password=password)
+    new_user = User(user_id=user_id, name=name, password=password, N=N, D=D)
     user_collection.insert_one(new_user.to_dict())
     return jsonify({"message": "User created successfully"}), 201
 
+
 @app.route("/users/<user_id>", methods=["GET"])
 def get_user(user_id):
+    logged_in_user = session.get("user_id")
+    if not logged_in_user:
+        return jsonify({"error": "Unauthorized: Please log in"}), 401
     user_data = user_collection.find_one({"user_id": user_id}, {"_id": 0})
     if user_data:
         user = User(user_data=user_data, encrypted=True)
@@ -111,7 +121,7 @@ def get_user(user_id):
 @app.route("/users/<user_id>/projects", methods=["POST"])
 def add_user_to_project(user_id):
     data = request.get_json()
-    project_id = data.get("project_id")
+    project_id = int(data.get("project_id"))
 
     if not project_id:
         return jsonify({"error": "Project ID is required"}), 400
@@ -129,7 +139,7 @@ def add_user_to_project(user_id):
 @app.route("/users/<user_id>/projects", methods=["DELETE"])
 def remove_user_from_project(user_id):
     data = request.get_json()
-    project_id = data.get("project_id")
+    project_id = int(data.get("project_id"))
 
     if not project_id:
         return jsonify({"error": "Project ID is required"}), 400
@@ -147,7 +157,7 @@ def remove_user_from_project(user_id):
 @app.route("/projects", methods=["POST"])
 def create_project():
     data = request.get_json()
-    project_id = data.get("project_id")
+    project_id = int(data.get("project_id"))
     project_name = data.get("project_name")
     project_description = data.get("project_description")
 
@@ -172,7 +182,7 @@ def get_project(project_id):
         return jsonify({"error": "Project not found"}), 404
 
 @app.route("/projects/<int:project_id>/users", methods=["POST"])
-def add_user_to_project(project_id):
+def add_user_to_project_2(project_id):
     data = request.get_json()
     user_id = data.get("user_id")
 
@@ -192,7 +202,7 @@ def add_user_to_project(project_id):
     return jsonify({"message": "User added to project successfully"}), 200
 
 @app.route("/projects/<int:project_id>/users/<string:user_id>", methods=["DELETE"])
-def remove_user_from_project(project_id, user_id):
+def remove_user_from_project_2(project_id, user_id):
     project_data = project_collection.find_one({"project_id": project_id})
     if not project_data:
         return jsonify({"error": "Project not found"}), 404
@@ -213,6 +223,30 @@ def get_project_members(project_id):
 
     members = project_data.get("user_ids", [])
     return jsonify({"members": members})
+
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    user_id = data.get("user_id")
+    password = data.get("password")
+
+    if not user_id or not password:
+        return jsonify({"error": "Missing required fields"}), 400
+    user_data = user_collection.find_one({"user_id": user_id}, {"_id": 0})
+    if not user_data:
+        return jsonify({"error": "User not found"}), 404
+    user = User(user_data=user_data, encrypted=True, N=N, D=D)
+    if not user.check_password(password):
+        return jsonify({"error": "Invalid credentials"}), 401
+    
+    session["user_id"] = user_id
+    return jsonify(user.to_dict())
+
+@app.route("/logout", methods=["POST"])
+def logout():
+    session.clear()
+    return jsonify({"message": "Logged out successfully"}), 200
+
 
 
 if __name__ == "__main__":
