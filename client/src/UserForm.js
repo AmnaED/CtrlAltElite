@@ -27,6 +27,7 @@ function UserForm(props) {
         const response = await fetch("http://localhost:5000/users",{
         method: "POST",
         headers: {"Content-Type" : "application/json"},
+        credentials: "include",
         body: JSON.stringify(formData)
         
         });
@@ -34,9 +35,23 @@ function UserForm(props) {
         console.log("Data recieved from Flask", data)
 
         if (response.ok) {
-          navigate('/projects');
+          const loginResponse = await fetch ("http://localhost:5000/login", {
+            method: "POST",
+            headers: {"Content-Type" : "application/json"},
+            body: JSON.stringify({user_id: formData.user_id, password: formData.password}),
+          });
+          const loginData = await loginResponse.json();
+          if (loginResponse.ok) {
+            alert("Signup and login successful");
+            setFormData({ user_id: '', name: '', password: '' });
+            navigate(`/users/${formData.user_id}/projects`);
+          } else {
+            alert(loginData.error)
+            navigate("/")
+          }
+          
         } else {
-          alert(data.message || data.error || "Login Failed")
+          alert(data.error)
         }
       } catch (error) {
         console.error("Error submitting form:", error);
@@ -44,12 +59,19 @@ function UserForm(props) {
       }
     } else {
       try {
-      const response = await fetch(`http://localhost:5000/users/${formData.user_id}`);
+      const response = await fetch(`http://localhost:5000/login`, {
+        method: "POST", 
+        headers: {"Content-Type" : "application/json"},
+        credentials: "include",
+        body: JSON.stringify({user_id: formData.user_id, password: formData.password}),
+      });
+      const data = await response.json();
       if (response.ok) {
         alert("Login Success");
-        navigate('/projects')
+        setFormData({ user_id: '', name: '', password: '' });
+        navigate(`/users/${formData.user_id}/projects`);
       } else {
-        alert("Login Failed")
+        alert(data.error)
       }
     } catch (error) {
       alert("Login Error")
@@ -70,7 +92,7 @@ return (
             </>
         )}
         <label>
-            Username:
+            User ID:
             <input name = "user_id" value = {formData.user_id} onChange = {handleInputChange}/>
         </label>
         <br />

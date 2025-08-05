@@ -4,6 +4,8 @@ from encryption import encrypt, decrypt
 
 class User:   ### Set N and D to None to get it running
     def __init__(self, user_data = None, user_id = None, name = None, password = None, project_id = None, encrypted = False, N=None, D=None):
+        self.N = N
+        self.D = D
         if user_data:  # to read in user document from database
             self.__user_id = user_data.get("user_id", "")
             self.__name = user_data.get("name", "")
@@ -17,7 +19,7 @@ class User:   ### Set N and D to None to get it running
 
     def check_password(self, user_input):
         " decrypts stored user password and checks against input "
-        return decrypt(self.__password) == user_input
+        return decrypt(self.__password, self.D, self.N) == user_input
     
     def add_to_project(self, project_id):
         if project_id not in self.__project_id:
