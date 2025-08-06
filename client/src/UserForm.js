@@ -24,7 +24,7 @@ function UserForm(props) {
     if (props.isNewUser) {
 
       try {
-        const response = await fetch("http://localhost:5000/users",{
+        const response = await fetch("http://127.0.0.1:5000/users",{
         method: "POST",
         headers: {"Content-Type" : "application/json"},
         credentials: "include",
@@ -35,7 +35,7 @@ function UserForm(props) {
         console.log("Data recieved from Flask", data)
 
         if (response.ok) {
-          const loginResponse = await fetch ("http://localhost:5000/login", {
+          const loginResponse = await fetch ("http://127.0.0.1:5000/login", {
             method: "POST",
             headers: {"Content-Type" : "application/json"},
             body: JSON.stringify({user_id: formData.user_id, password: formData.password}),
@@ -59,7 +59,7 @@ function UserForm(props) {
       }
     } else {
       try {
-      const response = await fetch(`http://localhost:5000/login`, {
+      const response = await fetch(`http://127.0.0.1:5000/login`, {
         method: "POST", 
         headers: {"Content-Type" : "application/json"},
         credentials: "include",
