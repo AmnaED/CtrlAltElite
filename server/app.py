@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, session
+from flask import Flask, jsonify, request, session, send_from_directory
 from flask_cors import CORS
 from dotenv import load_dotenv
 from pymongo import MongoClient
@@ -10,12 +10,12 @@ import os
 # Load environment variables from .env
 load_dotenv()
 
-## needed N and D values
+# needed N and D values
 N = int(os.getenv("N"))
 D = int(os.getenv("D"))
 
 # Initialize hardware set
-hardware_set = hardwareSet()
+hardware_sets = {1: hardwareSet(), 2: hardwareSet()}
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY")
@@ -35,11 +35,6 @@ project_collection = project_db["project-table"]
 user_db = client["user-management-db"]
 user_collection = user_db["user-management"]
 
-
-@app.route("/")
-def home():
-    return jsonify({"message": "Hello from Flask!"})
-
 @app.route("/hardware/<int:hardware_id>/capacity", methods=["GET"])
 def get_hardware_capacity(hardware_id):
     hardware = resources_collection.find_one(
@@ -47,12 +42,16 @@ def get_hardware_capacity(hardware_id):
         {"_id": 0, "total_capacity": 1}
     )
     if hardware:
+        hardware_set = hardware_sets.get(hardware_id)
+        if not hardware_set:
+            return jsonify({"error": "Hardware ID not valid"}), 400
+
         hardware_set.initialize_capacity(hardware)
         capacity = hardware_set.get_capacity()
-        return jsonify({"capacity": capacity})
-
+        return jsonify({"capacity": capacity}), 200
     else:
-        return jsonify({"error": "Hardware not found"})
+        return jsonify({"error": "Hardware not found"}), 404
+
 
 @app.route("/hardware/<int:hardware_id>/availability", methods=["GET"])
 def get_hardware_availability(hardware_id):
@@ -61,13 +60,17 @@ def get_hardware_availability(hardware_id):
         {"_id": 0, "available": 1}
     )
     if hardware:
+        hardware_set = hardware_sets.get(hardware_id)
+        if not hardware_set:
+            return jsonify({"error": "Hardware ID not valid"}), 400
+    
         hardware_set.initialize_availability(hardware)
         availability = hardware_set.get_availability()
-        return jsonify({"availability": availability})
-
+        return jsonify({"availability": availability}), 200
     else:
-        return jsonify({"error": "Hardware not found"}), 400
-    
+        return jsonify({"error": "Hardware not found"}), 404
+
+
 @app.route("/hardware/checkout", methods=["POST"])
 def checkout_hardware():
     data = request.get_json()
@@ -75,21 +78,20 @@ def checkout_hardware():
     project_id = data.get("project_id")
     hardware_id = data.get("hardware_id")
 
-    result, updated_availability = hardware_set.check_out(qty, project_id, hardware_id)
-
     hardware = resources_collection.find_one({"hardware_id": hardware_id})
     if not hardware:
-        return jsonify({"error": "Hardware not found"}), 400
+        return jsonify({"error": "Hardware not found"}), 404
 
-    resources_collection.update_one(
-        {"hardware_id": hardware_id},
-        {"$set": {"available": updated_availability}}
-    )
+    hardware_set = hardware_sets.get(hardware_id)
+    if not hardware_set:
+        return jsonify({"error": "Hardware ID not valid"}), 400
+    
+    hardware_set.initialize_availability(hardware)
+    result, updated_availability = hardware_set.check_out(qty, project_id, hardware_id)
+    resources_collection.update_one({"hardware_id": hardware_id}, {"$set": {"available": updated_availability}})
 
-    return jsonify({
-        "result": result,
-        "available": updated_availability
-    })
+    return jsonify({"result": result, "available": updated_availability}), 200
+
 
 @app.route("/hardware/checkin", methods=["POST"])
 def checkin_hardware():
@@ -98,19 +100,23 @@ def checkin_hardware():
     project_id = data.get("project_id")
     hardware_id = data.get("hardware_id")
 
+    hardware = resources_collection.find_one({"hardware_id": hardware_id})
+    if not hardware:
+        return jsonify({"error": "Hardware not found"}), 404
+    
+    hardware_set = hardware_sets.get(hardware_id)
+    if not hardware_set:
+        return jsonify({"error": "Hardware ID not valid"}), 400
+
+    hardware_set.initialize_availability(hardware)
     result, updated_availability = hardware_set.check_in(qty, project_id, hardware_id)
 
     if result == 0:
-        resources_collection.update_one(
-            {"hardware_id": hardware_id},
-            {"$set": {"available": updated_availability}}
-        )
-        return jsonify({
-            "result": result,
-            "available": updated_availability
-        })
+        resources_collection.update_one({"hardware_id": hardware_id}, {"$set": {"available": updated_availability}})
+        return jsonify({"result": result, "available": updated_availability}), 200
     else:
         return jsonify({"error": "Invalid check-in request"}), 400
+
 
 @app.route("/users", methods=["POST"])
 def create_user():
