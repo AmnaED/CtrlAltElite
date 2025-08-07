@@ -114,7 +114,6 @@ function ResourceRequestForm({ projectID }) {
         if (successMessages.length > 0) {
         alert(successMessages.join("\n"));
         }
-
       // Clear input fields
       setFormData({ requestAmount1: '', requestAmount2: '' });
 
