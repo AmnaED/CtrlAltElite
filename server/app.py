@@ -277,7 +277,12 @@ def logout():
     session.clear()
     return jsonify({"message": "Logged out successfully"}), 200
 
-
+# New routes to serve the static files from the React frontend
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve_react(path):
+    if path != "" and os.path.exists(f"client/build/{path}"):
+        return send_from_directory('client/build', path)
 
 if __name__ == "__main__":
     app.run(debug=True)
