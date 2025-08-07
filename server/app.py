@@ -17,7 +17,7 @@ D = int(os.getenv("D"))
 # Initialize hardware set
 hardware_sets = {1: hardwareSet(), 2: hardwareSet()}
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='build', static_url_path='')
 app.secret_key = os.getenv("SECRET_KEY")
 CORS(app, supports_credentials=True)
 
