@@ -2,6 +2,6 @@
   "name": "full-stack-app",
   "version": "1.0.0",
   "scripts": {
-    "heroku-postbuild": "cd client && npm install && npm run build"
+    "heroku-postbuild": "cd client && npm install && npm run build  && cd .. && rm -rf server/static && mv client/build server/static"
   }
 }
