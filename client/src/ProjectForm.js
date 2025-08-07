@@ -1,6 +1,7 @@
 import React, {useState} from "react";
 import { useNavigate } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
+import API_BASE_URL from './config';
 
 
 
@@ -25,7 +26,7 @@ function ProjectForm(props) {
   async function addUser(project_id) {
 
     try {
-      const response = await fetch (`http://localhost:5000/projects/${Number(project_id)}/users`, {
+      const response = await fetch (`${API_BASE_URL}/projects/${Number(project_id)}/users`, {
         method: "POST",
         headers: {"Content-Type" : "application/json"},
         body: JSON.stringify({user_id: user_id,}),
@@ -34,7 +35,7 @@ function ProjectForm(props) {
       console.log("Data recieved", data.message);
 
       if (response.ok) {
-        alert("User added to project");
+        console("User added to project");
         return response;
       } else {
         alert(data.error || "Error in adding user to project");
@@ -50,7 +51,7 @@ function ProjectForm(props) {
   async function addProject(user_id, project_id) {
 
     try {
-      const response = await fetch (`http://localhost:5000/users/${user_id}/projects`, {
+      const response = await fetch (`${API_BASE_URL}/users/${user_id}/projects`, {
         method: "POST",
         headers: {"Content-Type" : "application/json"},
         body: JSON.stringify({project_id: Number(project_id)}),
@@ -59,7 +60,7 @@ function ProjectForm(props) {
       console.log("Data recieved", data.message);
 
       if (response.ok) {
-        alert("Project added to User");
+        console.log("Project added to User");
         return response;
       } else {
         alert(data.error || "Error in adding project to user");
@@ -78,7 +79,7 @@ function ProjectForm(props) {
 
     if (props.isNewProject) {
       try {
-        const response = await fetch("http://localhost:5000/projects",{
+        const response = await fetch(`${API_BASE_URL}/projects`,{
         method: "POST",
         headers: {"Content-Type" : "application/json"},
         body: JSON.stringify(formData),
@@ -97,9 +98,9 @@ function ProjectForm(props) {
             setFormData({ project_id: '', project_name: '', project_description: '' });
             alert("Both user and project linked successfully!");
           } else if (addUserResponse?.ok && !addProjectResponse?.ok) {
-            alert("User added to project, but failed to add project to user.");
+            console.log("User added to project, error adding project to user.");
           } else if (!addUserResponse?.ok && addProjectResponse?.ok) {
-            alert("Project added to user, but failed to add user to project.");
+            console.log("Project added to user, user already in project.");
           } else {
             alert("Failed to link user and project.");
           }
@@ -109,7 +110,7 @@ function ProjectForm(props) {
         }
     } else {
       try {
-        const response = await fetch (`http://localhost:5000/projects/${Number(formData.project_id)}`);
+        const response = await fetch (`${API_BASE_URL}/projects/${Number(formData.project_id)}`);
         const data = await response.json();
         if (!response.ok) {
         alert(data.error || "Could not find project");
@@ -123,9 +124,9 @@ function ProjectForm(props) {
             setFormData({ project_id: '', project_name: '', project_description: '' });
             alert("Both user and project linked successfully!");
           } else if (addUserResponse?.ok && !addProjectResponse?.ok) {
-            alert("User added to project, but failed to add project to user.");
+            console.log("User added to project, error adding project to user.");
           } else if (!addUserResponse?.ok && addProjectResponse?.ok) {
-            alert("Project added to user, but failed to add user to project.");
+            console.log("Project added to user, user already in project.");
           } else {
             alert("Failed to link user and project.");
           }
