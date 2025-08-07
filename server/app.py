@@ -283,6 +283,9 @@ def logout():
 def serve_react(path):
     if path != "" and os.path.exists(f"client/build/{path}"):
         return send_from_directory('client/build', path)
+    else:
+        return send_from_directory('client/build', 'index.html')
+
 
 if __name__ == "__main__":
     app.run(debug=True)
