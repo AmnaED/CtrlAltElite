@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, session
+from flask import Flask, jsonify, request, session, send_from_directory
 from flask_cors import CORS
 from dotenv import load_dotenv
 from pymongo import MongoClient
@@ -10,12 +10,12 @@ import os
 # Load environment variables from .env
 load_dotenv()
 
-## needed N and D values
+# needed N and D values
 N = int(os.getenv("N"))
 D = int(os.getenv("D"))
 
 # Initialize hardware set
-hardware_set = hardwareSet()
+hardware_sets = {1: hardwareSet(), 2: hardwareSet()}
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY")
@@ -79,8 +79,6 @@ def checkout_hardware():
     project_id = data.get("project_id")
     hardware_id = data.get("hardware_id")
 
-    result, updated_availability = hardware_set.check_out(qty, project_id, hardware_id)
-
     hardware = resources_collection.find_one({"hardware_id": hardware_id})
     if not hardware:
         return jsonify({"error": "Hardware not found"}), 400
@@ -115,6 +113,15 @@ def checkin_hardware():
     project_id = data.get("project_id")
     hardware_id = data.get("hardware_id")
 
+    hardware = resources_collection.find_one({"hardware_id": hardware_id})
+    if not hardware:
+        return jsonify({"error": "Hardware not found"}), 404
+    
+    hardware_set = hardware_sets.get(hardware_id)
+    if not hardware_set:
+        return jsonify({"error": "Hardware ID not valid"}), 400
+
+    hardware_set.initialize_availability(hardware)
     result, updated_availability = hardware_set.check_in(qty, project_id, hardware_id)
 
     if result in [0, 1]:  # Only update DB if any check-in actually occurred
@@ -303,6 +310,13 @@ def logout():
     session.clear()
     return jsonify({"message": "Logged out successfully"}), 200
 
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve(path):
+    if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
+        return send_from_directory(app.static_folder, path)
+    else:
+        return send_from_directory(app.static_folder, 'index.html')
 
 
 if __name__ == "__main__":
