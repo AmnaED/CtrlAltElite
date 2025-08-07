@@ -277,18 +277,13 @@ def logout():
     session.clear()
     return jsonify({"message": "Logged out successfully"}), 200
 
-# A dedicated route to handle requests for static files
-@app.route('/static/<path:filename>')
-def serve_static(filename):
-    # Serve static files directly from the static folder
-    return send_from_directory(app.static_folder, filename)
-
-# A single catch-all route to serve the React application's index.html
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def serve(path):
-    # For all other routes (including the root), serve the main index.html
-    return send_from_directory(app.static_folder, 'index.html')
+    if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
+        return send_from_directory(app.static_folder, path)
+    else:
+        return send_from_directory(app.static_folder, 'index.html')
 
 
 if __name__ == "__main__":
