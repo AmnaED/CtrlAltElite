@@ -1,5 +1,6 @@
 import React, {useState} from "react";
 import { useNavigate } from 'react-router-dom';
+import API_BASE_URL from "./config";
 
 function UserForm(props) {
   const navigate = useNavigate();
@@ -24,7 +25,7 @@ function UserForm(props) {
     if (props.isNewUser) {
 
       try {
-        const response = await fetch("http://localhost:5000/users",{
+        const response = await fetch(`${API_BASE_URL}/users`,{
         method: "POST",
         headers: {"Content-Type" : "application/json"},
         credentials: "include",
@@ -35,7 +36,7 @@ function UserForm(props) {
         console.log("Data recieved from Flask", data)
 
         if (response.ok) {
-          const loginResponse = await fetch ("http://localhost:5000/login", {
+          const loginResponse = await fetch (`${API_BASE_URL}/login`, {
             method: "POST",
             headers: {"Content-Type" : "application/json"},
             body: JSON.stringify({user_id: formData.user_id, password: formData.password}),
@@ -59,7 +60,7 @@ function UserForm(props) {
       }
     } else {
       try {
-      const response = await fetch(`http://localhost:5000/login`, {
+      const response = await fetch(`${API_BASE_URL}/login`, {
         method: "POST", 
         headers: {"Content-Type" : "application/json"},
         credentials: "include",
