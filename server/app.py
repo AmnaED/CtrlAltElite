@@ -278,13 +278,10 @@ def logout():
     return jsonify({"message": "Logged out successfully"}), 200
 
 # New routes to serve the static files from the React frontend
-@app.route('/')
-def serve_root():
-    return send_from_directory(app.static_folder, 'index.html')
-
+@app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
-def serve_static(path):
-    if os.path.exists(os.path.join(app.static_folder, path)):
+def serve(path):
+    if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
         return send_from_directory(app.static_folder, path)
     else:
         return send_from_directory(app.static_folder, 'index.html')
