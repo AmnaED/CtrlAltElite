@@ -35,7 +35,7 @@ function ProjectForm(props) {
       console.log("Data recieved", data.message);
 
       if (response.ok) {
-        alert("User added to project");
+        console("User added to project");
         return response;
       } else {
         alert(data.error || "Error in adding user to project");
@@ -60,7 +60,7 @@ function ProjectForm(props) {
       console.log("Data recieved", data.message);
 
       if (response.ok) {
-        alert("Project added to User");
+        console.log("Project added to User");
         return response;
       } else {
         alert(data.error || "Error in adding project to user");
@@ -98,9 +98,9 @@ function ProjectForm(props) {
             setFormData({ project_id: '', project_name: '', project_description: '' });
             alert("Both user and project linked successfully!");
           } else if (addUserResponse?.ok && !addProjectResponse?.ok) {
-            alert("User added to project, but failed to add project to user.");
+            console.log("User added to project, error adding project to user.");
           } else if (!addUserResponse?.ok && addProjectResponse?.ok) {
-            alert("Project added to user, but failed to add user to project.");
+            console.log("Project added to user, user already in project.");
           } else {
             alert("Failed to link user and project.");
           }
@@ -124,9 +124,9 @@ function ProjectForm(props) {
             setFormData({ project_id: '', project_name: '', project_description: '' });
             alert("Both user and project linked successfully!");
           } else if (addUserResponse?.ok && !addProjectResponse?.ok) {
-            alert("User added to project, but failed to add project to user.");
+            console.log("User added to project, error adding project to user.");
           } else if (!addUserResponse?.ok && addProjectResponse?.ok) {
-            alert("Project added to user, but failed to add user to project.");
+            console.log("Project added to user, user already in project.");
           } else {
             alert("Failed to link user and project.");
           }
