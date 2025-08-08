@@ -1,4 +1,23 @@
+import React from 'react';
+import { useParams } from 'react-router-dom';
 import ResourceQuantityForm from './ResourceQuantityForm';
+import ResourceRequestForm from './ResourceRequestForm';
+import './Resource.css';
+
+function ResourceManagementPage() {
+  const { user_id, project_id } = useParams();
+
+  return (
+    <div>
+      <h1>Resource Management Page</h1>
+      <h2>Hardware Requests</h2>
+      <ResourceRequestForm projectID={123} />
+    </div>
+  );
+}
+
+export default ResourceManagementPage;
+/*import ResourceQuantityForm from './ResourceQuantityForm';
 import ResourceRequestForm from './ResourceRequestForm';
 import './Resource.css'
 
@@ -16,3 +35,4 @@ function ResouceManagmementPage() {
 }
 
 export default ResouceManagmementPage;
+*/

@@ -27,6 +27,7 @@ function ProjectForm(props) {
 
     try {
       const response = await fetch (`${API_BASE_URL}/projects/${Number(project_id)}/users`, {
+      //const response = await fetch (`http://127.0.0.1:5000/projects/${Number(project_id)}/users`, {
         method: "POST",
         headers: {"Content-Type" : "application/json"},
         body: JSON.stringify({user_id: user_id,}),
@@ -52,6 +53,7 @@ function ProjectForm(props) {
 
     try {
       const response = await fetch (`${API_BASE_URL}/users/${user_id}/projects`, {
+      //const response = await fetch (`http://127.0.0.1:5000/users/${user_id}/projects`, {
         method: "POST",
         headers: {"Content-Type" : "application/json"},
         body: JSON.stringify({project_id: Number(project_id)}),
@@ -80,6 +82,7 @@ function ProjectForm(props) {
     if (props.isNewProject) {
       try {
         const response = await fetch(`${API_BASE_URL}/projects`,{
+       // const response = await fetch("http://127.0.0.1:5000/projects",{
         method: "POST",
         headers: {"Content-Type" : "application/json"},
         body: JSON.stringify(formData),
@@ -97,6 +100,7 @@ function ProjectForm(props) {
           if (addUserResponse?.ok && addProjectResponse?.ok) {
             setFormData({ project_id: '', project_name: '', project_description: '' });
             alert("Both user and project linked successfully!");
+            navigate(`/users/${user_id}/projects/${projectId}/resources`);
           } else if (addUserResponse?.ok && !addProjectResponse?.ok) {
             console.log("User added to project, error adding project to user.");
           } else if (!addUserResponse?.ok && addProjectResponse?.ok) {
@@ -111,6 +115,7 @@ function ProjectForm(props) {
     } else {
       try {
         const response = await fetch (`${API_BASE_URL}/projects/${Number(formData.project_id)}`);
+     //  const response = await fetch (`http://127.0.0.1:5000/projects/${Number(formData.project_id)}`);
         const data = await response.json();
         if (!response.ok) {
         alert(data.error || "Could not find project");
