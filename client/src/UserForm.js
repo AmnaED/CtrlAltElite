@@ -22,10 +22,10 @@ function UserForm(props) {
   async function handleSubmit(event) {
     event.preventDefault();
     console.log("Form Submitted", formData);
+
+    // if user is creating a user account, get user information and create account 
     if (props.isNewUser) {
-
       try {
-
         const response = await fetch(`${API_BASE_URL}/users`,{
         //const response = await fetch("http://127.0.0.1:5000/users",{
 
@@ -48,11 +48,11 @@ function UserForm(props) {
           const loginData = await loginResponse.json();
           if (loginResponse.ok) {
             alert("Signup and login successful");
-            setFormData({ user_id: '', name: '', password: '' });
-            navigate(`/users/${formData.user_id}/projects`);
+            setFormData({ user_id: '', name: '', password: '' });  // reset input fields
+            navigate(`/users/${formData.user_id}/projects`); // navigate to projects page
           } else {
             alert(loginData.error)
-            navigate("/")
+            navigate("/")  // if login error occurs, navigate back to user login page
           }
           
         } else {
@@ -63,9 +63,9 @@ function UserForm(props) {
         alert("An error occurred. Please try again.");
       }
     } else {
+      // if user is returning user, check credentials 
       try {
       const response = await fetch(`${API_BASE_URL}/login`, {
-
      // const response = await fetch(`http://127.0.0.1:5000/login`, {
 
         method: "POST", 
@@ -76,8 +76,8 @@ function UserForm(props) {
       const data = await response.json();
       if (response.ok) {
         alert("Login Success");
-        setFormData({ user_id: '', name: '', password: '' });
-        navigate(`/users/${formData.user_id}/projects`);
+        setFormData({ user_id: '', name: '', password: '' }); // reset input fields
+        navigate(`/users/${formData.user_id}/projects`);  // navigate to projects page
       } else {
         alert(data.error)
       }

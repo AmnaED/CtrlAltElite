@@ -23,6 +23,7 @@ function ProjectForm(props) {
     }));
   }
 
+  // add user to project
   async function addUser(project_id) {
 
     try {
@@ -48,7 +49,7 @@ function ProjectForm(props) {
     }
   }
 
-
+  // add project to user
   async function addProject(user_id, project_id) {
 
     try {
@@ -74,11 +75,13 @@ function ProjectForm(props) {
     }
   }
 
+
   async function handleSubmit(event) {
         
     event.preventDefault();
     console.log("Form Submitted", formData);
 
+    // if new project, create project and immediately link user and project
     if (props.isNewProject) {
       try {
         const response = await fetch(`${API_BASE_URL}/projects`,{
@@ -93,18 +96,22 @@ function ProjectForm(props) {
         if (!response.ok) {
           alert(data.error);
           return;
-        }
+        }  
+          // automatically link project and user 
           const projectId = data.project_id;
           const addUserResponse = await addUser(projectId);
           const addProjectResponse = await addProject(user_id, projectId);
           if (addUserResponse?.ok && addProjectResponse?.ok) {
+            // reset form inputs
             setFormData({ project_id: '', project_name: '', project_description: '' });
             alert("Both user and project linked successfully!");
-            navigate(`/users/${user_id}/projects/${projectId}/resources`);
+            navigate(`/resource-management`);  // navigate to resource page
           } else if (addUserResponse?.ok && !addProjectResponse?.ok) {
             console.log("User added to project, error adding project to user.");
+            navigate(`/resource-management`);  // navigate to resource page
           } else if (!addUserResponse?.ok && addProjectResponse?.ok) {
             console.log("Project added to user, user already in project.");
+            navigate(`/resource-management`);  // navigate to resource page
           } else {
             alert("Failed to link user and project.");
           }
@@ -113,7 +120,8 @@ function ProjectForm(props) {
           alert("An error occurred. Please try again.");
         }
     } else {
-      try {
+      // if project already exists, check if user is in project; link user and project if not
+      try { 
         const response = await fetch (`${API_BASE_URL}/projects/${Number(formData.project_id)}`);
      //  const response = await fetch (`http://127.0.0.1:5000/projects/${Number(formData.project_id)}`);
         const data = await response.json();
@@ -126,12 +134,15 @@ function ProjectForm(props) {
           const addUserResponse = await addUser(projectId);
           const addProjectResponse = await addProject(user_id, projectId)
           if (addUserResponse?.ok && addProjectResponse?.ok) {
-            setFormData({ project_id: '', project_name: '', project_description: '' });
+            setFormData({ project_id: '', project_name: '', project_description: '' }); // reset input fields 
             alert("Both user and project linked successfully!");
+            navigate(`/resource-management`);  // navigate to resource page
           } else if (addUserResponse?.ok && !addProjectResponse?.ok) {
             console.log("User added to project, error adding project to user.");
+            navigate(`/resource-management`);  // navigate to resource page
           } else if (!addUserResponse?.ok && addProjectResponse?.ok) {
             console.log("Project added to user, user already in project.");
+            navigate(`/resource-management`);  // navigate to resource page
           } else {
             alert("Failed to link user and project.");
           }
