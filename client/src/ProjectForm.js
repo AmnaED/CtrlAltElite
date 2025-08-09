@@ -28,7 +28,6 @@ function ProjectForm(props) {
 
     try {
       const response = await fetch (`${API_BASE_URL}/projects/${Number(project_id)}/users`, {
-      //const response = await fetch (`http://127.0.0.1:5000/projects/${Number(project_id)}/users`, {
         method: "POST",
         headers: {"Content-Type" : "application/json"},
         body: JSON.stringify({user_id: user_id,}),
@@ -54,7 +53,6 @@ function ProjectForm(props) {
 
     try {
       const response = await fetch (`${API_BASE_URL}/users/${user_id}/projects`, {
-      //const response = await fetch (`http://127.0.0.1:5000/users/${user_id}/projects`, {
         method: "POST",
         headers: {"Content-Type" : "application/json"},
         body: JSON.stringify({project_id: Number(project_id)}),
@@ -85,7 +83,6 @@ function ProjectForm(props) {
     if (props.isNewProject) {
       try {
         const response = await fetch(`${API_BASE_URL}/projects`,{
-       // const response = await fetch("http://127.0.0.1:5000/projects",{
         method: "POST",
         headers: {"Content-Type" : "application/json"},
         body: JSON.stringify(formData),
@@ -120,10 +117,8 @@ function ProjectForm(props) {
           alert("An error occurred. Please try again.");
         }
     } else {
-      // if project already exists, check if user is in project; link user and project if not
-      try { 
+      try {
         const response = await fetch (`${API_BASE_URL}/projects/${Number(formData.project_id)}`);
-     //  const response = await fetch (`http://127.0.0.1:5000/projects/${Number(formData.project_id)}`);
         const data = await response.json();
         if (!response.ok) {
         alert(data.error || "Could not find project");
