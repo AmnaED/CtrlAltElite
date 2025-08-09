@@ -26,6 +26,7 @@ function UserForm(props) {
     // if user is creating a user account, get user information and create account 
     if (props.isNewUser) {
       try {
+
         const response = await fetch(`${API_BASE_URL}/users`,{
         method: "POST",
         headers: {"Content-Type" : "application/json"},
