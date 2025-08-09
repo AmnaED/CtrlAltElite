@@ -1,5 +1,6 @@
 import React, {useState} from "react";
 import { useNavigate } from 'react-router-dom';
+import API_BASE_URL from "./config";
 
 function UserForm(props) {
   const navigate = useNavigate();
@@ -21,10 +22,12 @@ function UserForm(props) {
   async function handleSubmit(event) {
     event.preventDefault();
     console.log("Form Submitted", formData);
-    if (props.isNewUser) {
 
+    // if user is creating a user account, get user information and create account 
+    if (props.isNewUser) {
       try {
-        const response = await fetch("http://127.0.0.1:5000/users",{
+
+        const response = await fetch(`${API_BASE_URL}/users`,{
         method: "POST",
         headers: {"Content-Type" : "application/json"},
         credentials: "include",
@@ -35,7 +38,7 @@ function UserForm(props) {
         console.log("Data recieved from Flask", data)
 
         if (response.ok) {
-          const loginResponse = await fetch ("http://127.0.0.1:5000/login", {
+          const loginResponse = await fetch (`${API_BASE_URL}/login`, {
             method: "POST",
             headers: {"Content-Type" : "application/json"},
             body: JSON.stringify({user_id: formData.user_id, password: formData.password}),
@@ -43,11 +46,11 @@ function UserForm(props) {
           const loginData = await loginResponse.json();
           if (loginResponse.ok) {
             alert("Signup and login successful");
-            setFormData({ user_id: '', name: '', password: '' });
-            navigate(`/users/${formData.user_id}/projects`);
+            setFormData({ user_id: '', name: '', password: '' });  // reset input fields
+            navigate(`/users/${formData.user_id}/projects`); // navigate to projects page
           } else {
             alert(loginData.error)
-            navigate("/")
+            navigate("/")  // if login error occurs, navigate back to user login page
           }
           
         } else {
@@ -58,8 +61,9 @@ function UserForm(props) {
         alert("An error occurred. Please try again.");
       }
     } else {
+      // if user is returning user, check credentials 
       try {
-      const response = await fetch(`http://127.0.0.1:5000/login`, {
+      const response = await fetch(`${API_BASE_URL}/login`, {
         method: "POST", 
         headers: {"Content-Type" : "application/json"},
         credentials: "include",
@@ -68,8 +72,8 @@ function UserForm(props) {
       const data = await response.json();
       if (response.ok) {
         alert("Login Success");
-        setFormData({ user_id: '', name: '', password: '' });
-        navigate(`/users/${formData.user_id}/projects`);
+        setFormData({ user_id: '', name: '', password: '' }); // reset input fields
+        navigate(`/users/${formData.user_id}/projects`);  // navigate to projects page
       } else {
         alert(data.error)
       }
