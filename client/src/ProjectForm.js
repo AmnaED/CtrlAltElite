@@ -2,7 +2,7 @@ import React, {useState} from "react";
 import { useNavigate } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
 
- const API_BASE_URL = 'https://hardware-d5c6a3377fd1.herokuapp.com';
+ const API_BASE_URL = 'https://hardware-d5c6a3377fd1.herokuapp.com/api';
 
 function ProjectForm(props) {
   const navigate = useNavigate();
