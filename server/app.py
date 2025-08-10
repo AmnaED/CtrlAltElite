@@ -14,12 +14,21 @@ load_dotenv()
 N = int(os.getenv("N"))
 D = int(os.getenv("D"))
 
+# Set production environment for Heroku
+os.environ['FLASK_ENV'] = 'production'
+
 # Initialize hardware set
 hardware_set = hardwareSet()
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static', static_url_path='')
 app.secret_key = os.getenv("SECRET_KEY")
-CORS(app, supports_credentials=True)
+
+#setting up Heroku url 
+if os.environ.get('FLASK_ENV') == 'production':
+    frontend_url = os.environ.get('FRONTEND_URL', 'https://hardware-d5c6a3377fd1.herokuapp.com')
+    CORS(app, supports_credentials=True, origins=[frontend_url])
+else:
+    CORS(app, supports_credentials=True, origins=["http://localhost:3000"])
 
 
 # Get MongoDB password and connect to database
@@ -38,7 +47,13 @@ user_collection = user_db["user-management"]
 
 @app.route("/")
 def home():
-    return jsonify({"message": "Hello from Flask!"})
+    try:
+        if os.path.exists('static/index.html'):
+            return send_file('static/index.html')
+        else:
+            return jsonify({"message": "React app not built yet"})
+    except Exception as e:
+        return jsonify({"error": str(e)})
 
         
 @app.route("/hardware/<int:hardware_id>/capacity", methods=["GET"])
@@ -74,6 +89,11 @@ def get_hardware_availability(hardware_id):
     
 @app.route("/hardware/checkout", methods=["POST"])
 def checkout_hardware():
+    
+    logged_in_user = session.get("user_id")
+    if not logged_in_user:
+        return jsonify({"error": "Unauthorized: Please log in"}), 401
+        
     data = request.get_json()
     qty = data.get("qty")
     project_id = data.get("project_id")
@@ -143,7 +163,16 @@ def checkin_hardware():
         }), 200
     else:
         return jsonify({"error": "Unexpected error during check-in."}), 500
-
+        
+@app.route("/users", methods=["GET"])
+def get_all_users():
+    logged_in_user = session.get("user_id")
+    if not logged_in_user:
+        return jsonify({"error": "Unauthorized: Please log in"}), 401
+        
+    users = list(user_collection.find({}, {"_id": 0, "password": 0}))
+    return jsonify({"users": users})
+        
 @app.route("/users", methods=["POST"])
 def create_user():
     data = request.get_json()
@@ -209,6 +238,16 @@ def remove_user_from_project(user_id):
     user_collection.update_one({"user_id": user_id}, {"$set": user.to_dict()})
     
     return jsonify({"message": "User removed from project successfully"}), 200
+    
+@app.route("/projects", methods=["GET"])
+def get_all_projects():
+    logged_in_user = session.get("user_id")
+    if not logged_in_user:
+        return jsonify({"error": "Unauthorized: Please log in"}), 401
+    
+    projects = list(project_collection.find({}, {"_id": 0}))
+    return jsonify({"projects": projects})
+    
 
 @app.route("/projects", methods=["POST"])
 def create_project():
@@ -306,4 +345,5 @@ def logout():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=False)

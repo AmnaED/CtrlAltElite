@@ -2,7 +2,7 @@ import React, {useState} from "react";
 import { useNavigate } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
 
-
+ const API_BASE_URL = 'https://hardware-d5c6a3377fd1.herokuapp.com/api';
 
 function ProjectForm(props) {
   const navigate = useNavigate();
@@ -25,7 +25,7 @@ function ProjectForm(props) {
   async function addUser(project_id) {
 
     try {
-      const response = await fetch (`http://127.0.0.1:5000/projects/${Number(project_id)}/users`, {
+      const response = await fetch (`${API_BASE_URL}/projects/${Number(project_id)}/users`, {
         method: "POST",
         headers: {"Content-Type" : "application/json"},
         body: JSON.stringify({user_id: user_id,}),
@@ -50,7 +50,7 @@ function ProjectForm(props) {
   async function addProject(user_id, project_id) {
 
     try {
-      const response = await fetch (`http://127.0.0.1:5000/users/${user_id}/projects`, {
+      const response = await fetch (`${API_BASE_URL}/users/${user_id}/projects`, {
         method: "POST",
         headers: {"Content-Type" : "application/json"},
         body: JSON.stringify({project_id: Number(project_id)}),
@@ -78,7 +78,7 @@ function ProjectForm(props) {
 
     if (props.isNewProject) {
       try {
-        const response = await fetch("http://127.0.0.1:5000/projects",{
+        const response = await fetch(`${API_BASE_URL}/projects`,{
         method: "POST",
         headers: {"Content-Type" : "application/json"},
         body: JSON.stringify(formData),
@@ -110,7 +110,7 @@ function ProjectForm(props) {
         }
     } else {
       try {
-        const response = await fetch (`http://127.0.0.1:5000/projects/${Number(formData.project_id)}`);
+        const response = await fetch (`${API_BASE_URL}/projects/${Number(formData.project_id)}`);
         const data = await response.json();
         if (!response.ok) {
         alert(data.error || "Could not find project");
