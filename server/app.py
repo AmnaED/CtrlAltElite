@@ -152,7 +152,13 @@ def checkin_hardware():
         }), 200
     else:
         return jsonify({"error": "Unexpected error during check-in."}), 500
-
+        
+@app.route("/users", methods=["GET"])
+def get_all_users():
+    logged_in_user = session.get("user_id")
+    if not logged_in_user:
+        return jsonify({"error": "Unauthorized: Please log in"}), 401
+        
 @app.route("/users", methods=["POST"])
 def create_user():
     data = request.get_json()
@@ -218,6 +224,11 @@ def remove_user_from_project(user_id):
     user_collection.update_one({"user_id": user_id}, {"$set": user.to_dict()})
     
     return jsonify({"message": "User removed from project successfully"}), 200
+    
+@app.route("/projects", methods=["GET"])
+def get_all_projects():
+    projects = list(project_collection.find({}, {"_id": 0}))
+    return jsonify({"projects": projects})
 
 @app.route("/projects", methods=["POST"])
 def create_project():
