@@ -14,12 +14,21 @@ load_dotenv()
 N = int(os.getenv("N"))
 D = int(os.getenv("D"))
 
+# Set production environment for Heroku
+os.environ['FLASK_ENV'] = 'production'
+
 # Initialize hardware set
 hardware_set = hardwareSet()
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY")
-CORS(app, supports_credentials=True)
+
+#setting up Heroku url 
+if os.environ.get('FLASK_ENV') == 'production':
+    frontend_url = os.environ.get('FRONTEND_URL', 'https://hardware-d5c6a3377fd1.herokuapp.com')
+    CORS(app, supports_credentials=True, origins=[frontend_url])
+else:
+    CORS(app, supports_credentials=True, origins=["http://localhost:3000"])
 
 
 # Get MongoDB password and connect to database
@@ -306,4 +315,5 @@ def logout():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=False)
