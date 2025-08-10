@@ -26,7 +26,7 @@ function UserForm(props) {
     if (props.isNewUser) {
 
       try {
-        const response = await fetch("${API_BASE_URL}/users",{
+        const response = await fetch(`${API_BASE_URL}/users`,{
         method: "POST",
         headers: {"Content-Type" : "application/json"},
         credentials: "include",
@@ -37,7 +37,7 @@ function UserForm(props) {
         console.log("Data recieved from Flask", data)
 
         if (response.ok) {
-          const loginResponse = await fetch ("${API_BASE_URL}/login", {
+          const loginResponse = await fetch (`${API_BASE_URL}/users`, {
             method: "POST",
             headers: {"Content-Type" : "application/json"},
             body: JSON.stringify({user_id: formData.user_id, password: formData.password}),
