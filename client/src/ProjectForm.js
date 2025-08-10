@@ -78,7 +78,7 @@ function ProjectForm(props) {
 
     if (props.isNewProject) {
       try {
-        const response = await fetch("${API_BASE_URL}/projects",{
+        const response = await fetch(`${API_BASE_URL}/projects`,{
         method: "POST",
         headers: {"Content-Type" : "application/json"},
         body: JSON.stringify(formData),
