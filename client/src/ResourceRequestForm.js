@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 import './Resource.css';
 
+import API_BASE_URL from "./config";
+
+
 function ResourceRequestForm({ projectID }) {
   const [formData, setFormData] = useState({
     requestAmount1: '',
@@ -17,10 +20,15 @@ function ResourceRequestForm({ projectID }) {
   // Extract fetch logic
   async function fetchHardwareData() {
     try {
-      const res1Cap = await fetch("http://127.0.0.1:5000/hardware/1/capacity");
-      const res1Avail = await fetch("http://127.0.0.1:5000/hardware/1/availability");
-      const res2Cap = await fetch("http://127.0.0.1:5000/hardware/2/capacity");
-      const res2Avail = await fetch("http://127.0.0.1:5000/hardware/2/availability");
+
+     const res1Cap = await fetch(`${API_BASE_URL}/hardware/1/capacity`);
+     const res1Avail = await fetch(`${API_BASE_URL}/hardware/1/availability`);
+     const res2Cap = await fetch(`${API_BASE_URL}/hardware/2/capacity`);
+     const res2Avail = await fetch(`${API_BASE_URL}/hardware/2/availability`);
+     // const res1Cap = await fetch("http://127.0.0.1:5000/hardware/1/capacity");
+     // const res1Avail = await fetch("http://127.0.0.1:5000/hardware/1/availability");
+     // const res2Cap = await fetch("http://127.0.0.1:5000/hardware/2/capacity");
+     // const res2Avail = await fetch("http://127.0.0.1:5000/hardware/2/availability");
 
       const cap1 = await res1Cap.json();
       const avail1 = await res1Avail.json();
@@ -60,7 +68,7 @@ function ResourceRequestForm({ projectID }) {
 
       if (formData.requestAmount1) {
         requests.push(
-          fetch(`http://127.0.0.1:5000/hardware/${route}`, {
+          fetch(`${API_BASE_URL}/hardware/${route}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             credentials: "include",
@@ -75,7 +83,7 @@ function ResourceRequestForm({ projectID }) {
 
       if (formData.requestAmount2) {
         requests.push(
-          fetch(`http://127.0.0.1:5000/hardware/${route}`, {
+          fetch(`${API_BASE_URL}/hardware/${route}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             credentials: "include",
