@@ -45,9 +45,15 @@ user_db = client["user-management-db"]
 user_collection = user_db["user-management"]
 
 
-@app.route('/')
-def serve_react_app():
-    return send_file('static/index.html')
+@app.route("/")
+def home():
+    try:
+        if os.path.exists('static/index.html'):
+            return send_file('static/index.html')
+        else:
+            return jsonify({"message": "React app not built yet"})
+    except Exception as e:
+        return jsonify({"error": str(e)})
 
         
 @app.route("/hardware/<int:hardware_id>/capacity", methods=["GET"])
