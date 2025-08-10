@@ -45,7 +45,7 @@ function UserForm(props) {
             alert("Account created and logged in successfully!");
             const userId = formData.user_id; 
             setFormData({ user_id: '', name: '', password: '' });
-            navigate(`/users/${userId}/projects`); /
+            navigate(`/users/${userId}/projects`);
           } else {
             alert(loginData.error)
             navigate("/")
