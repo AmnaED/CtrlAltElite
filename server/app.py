@@ -20,7 +20,7 @@ os.environ['FLASK_ENV'] = 'production'
 # Initialize hardware set
 hardware_set = hardwareSet()
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static', static_url_path='')
 app.secret_key = os.getenv("SECRET_KEY")
 
 #setting up Heroku url 
@@ -45,9 +45,9 @@ user_db = client["user-management-db"]
 user_collection = user_db["user-management"]
 
 
-@app.route("/")
-def home():
-    return jsonify({"message": "Hello from Flask!"})
+@app.route('/')
+def serve_react_app():
+    return send_file('static/index.html')
 
         
 @app.route("/hardware/<int:hardware_id>/capacity", methods=["GET"])
