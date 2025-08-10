@@ -102,8 +102,7 @@ return (
             <input name="password" 
             type="password"
             value={formData.password}
-            onChange={handleInputChange}
-            style={inputStyle} />
+            onChange={handleInputChange} />
         </label>
             <br />
         <button type="submit">{props.buttonMessage}</button>
