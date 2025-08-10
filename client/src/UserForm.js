@@ -42,9 +42,10 @@ function UserForm(props) {
           });
           const loginData = await loginResponse.json();
           if (loginResponse.ok) {
-            alert("Signup and login successful");
+            alert("Account created and logged in successfully!");
+            const userId = formData.user_id; 
             setFormData({ user_id: '', name: '', password: '' });
-            navigate(`/users/${formData.user_id}/projects`);
+            navigate(`/users/${userId}/projects`); /
           } else {
             alert(loginData.error)
             navigate("/")
@@ -98,7 +99,11 @@ return (
         <br />
         <label>
             Password:
-            <input name = "password" type = "text" value = {formData.password} onChange = {handleInputChange}/>
+            <input name="password" 
+            type="password"
+            value={formData.password}
+            onChange={handleInputChange}
+            style={inputStyle} />
         </label>
             <br />
         <button type="submit">{props.buttonMessage}</button>
