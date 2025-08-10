@@ -83,6 +83,11 @@ def get_hardware_availability(hardware_id):
     
 @app.route("/hardware/checkout", methods=["POST"])
 def checkout_hardware():
+    
+    logged_in_user = session.get("user_id")
+    if not logged_in_user:
+        return jsonify({"error": "Unauthorized: Please log in"}), 401
+        
     data = request.get_json()
     qty = data.get("qty")
     project_id = data.get("project_id")
@@ -159,6 +164,9 @@ def get_all_users():
     if not logged_in_user:
         return jsonify({"error": "Unauthorized: Please log in"}), 401
         
+    users = list(user_collection.find({}, {"_id": 0, "password": 0}))
+    return jsonify({"users": users})
+        
 @app.route("/users", methods=["POST"])
 def create_user():
     data = request.get_json()
@@ -227,8 +235,13 @@ def remove_user_from_project(user_id):
     
 @app.route("/projects", methods=["GET"])
 def get_all_projects():
+    logged_in_user = session.get("user_id")
+    if not logged_in_user:
+        return jsonify({"error": "Unauthorized: Please log in"}), 401
+    
     projects = list(project_collection.find({}, {"_id": 0}))
     return jsonify({"projects": projects})
+    
 
 @app.route("/projects", methods=["POST"])
 def create_project():
